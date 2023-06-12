@@ -1,0 +1,4 @@
+# DotnetProject
+Design a page: In the folder below, I've shared two examples of an administrative maintenance page that allows the users to maintain a set of lookup values. The AgencyType and DebtType tables (SQL included to create the table) are the data storage of the example. The Aspx and JS pages are the UI that the user interacts with. The Controller.cs file contains the controller code that the two examples would be calling to service the UI. The LookupProvider.cs file contains the business object code that the Controller uses to reach the database through the data layer which is standard entity framework 6.
+Given these two examples as a reference, please create the necessary items to allow the users to maintain the lookup values for this new FilingNameFeeType table (SQL included in the same file to create the table).
+Please return all the files that you create.
