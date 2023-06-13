@@ -143,3 +143,67 @@
             }
             return Json(result.ToArray<KeyValuePair<string, string>>(), JsonRequestBehavior.AllowGet);
         }
+
+
+
+
+
+
+
+
+[AuthorizeUserAttribute(Access = "Read", ViewPage = "Manage Filing Name Fee Types")]
+        public ActionResult FilingNameFeeTypes()
+        {
+            List<DataItem> filingNameFeeTypes = LookUpProvider.GetFilingNameFeeTypes();
+            filingNameFeeTypes.Insert(0, new DataItem() { Id = -1, Name = "- Select Filing Name Fee Type -", Value = "0" });
+            ViewData["FilingNameFeeTypes"] = new SelectList(FilingNameFeeTypes, "Id", "Name");
+
+            //Set view permissions for aspx
+            MenuSecurityModel model = ControllerHelper.ConvertToMenuSecurityModel(UserProvider.GetViewPagePermission(((ClaimsIdentity)HttpContext.User.Identity).Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToArray()));
+
+            return View(model);
+        }
+
+        [AuthorizeUserAttribute(Access = "Delete", ViewPage = "Manage Filing Name Fee Types")]
+        public JsonResult DeleteFilingNameFeeType(int id)
+        {
+            IDictionary<string, string> result = new Dictionary<string, string>();
+            Dictionary<string, object> deleteResult = LookUpProvider.DeleteFilingNameFeeType(id);
+            if ((LookUpProvider.LookUpResponseCode)deleteResult["Result"] != LookUpProvider.LookUpResponseCode.Success)
+            {
+                result.Add("ErrorMessage", deleteResult["ErrorMessage"].ToString());
+            }
+            return Json(result.ToArray<KeyValuePair<string, string>>(), JsonRequestBehavior.AllowGet);
+        }
+
+
+        [AuthorizeUserAttribute(Access = "Read", ViewPage = "Manage Filing Name Fee Types")]
+        public JsonResult GetFilingNameFeeType(int id)
+        {
+            IDictionary<string, string> result = new Dictionary<string, string>();
+            FilingNameFeeType filingNameFeeType = LookUpProvider.GetFilingNameFeeType(id, null);
+            if (debtType != null)
+            {
+                result.Add("Name", filingNameFeeType.Name);
+              
+            }
+            return Json(result.ToArray<KeyValuePair<string, string>>(), JsonRequestBehavior.AllowGet);
+        }
+
+        [AuthorizeUserAttribute(Access = "Create, Update", ViewPage = "Manage Filing Name Fee Types")]
+        public JsonResult UpdateFilingNameType(int id, string name)
+        {
+            IDictionary<int, string> result = new Dictionary<int, string>();
+            IDictionary<string, object> saveResult = LookUpProvider.SaveFilingNameFeeType(id, name);
+            if ((LookUpProvider.LookUpResponseCode)saveResult["Result"] == LookUpProvider.LookUpResponseCode.Success)
+            {
+                List<DataItem> filingNameFeeTypes = LookUpProvider.GetFilingNameFeeTypes();
+                filingNameFeeTypes.ToList().ForEach(t =>
+                {
+                    result.Add(t.Id, t.Name);
+                });
+            }
+            return Json(result.ToArray<KeyValuePair<int, string>>(), JsonRequestBehavior.AllowGet);
+        }
+
+       

@@ -261,3 +261,114 @@ public static List<DataItem> GetDebtTypes()
             }
             return result;
         }
+        public static List<DataItem> GetFilingNameFeeTypes()
+        {
+            ComplianceRepositoryEntities db = new ComplianceRepositoryEntities();
+            List<DataItem> query = (from d in db.FilingNameFeeTypes orderby d.Name select new DataItem { Id = d.Id, Name = d.Name }).ToList();
+            return query;
+        }
+
+        public static FilingNameFeeType GetFilingNameFeeType(int id, ComplianceRepositoryEntities complianceDb)
+        {
+            return GetFilingNameFeeType(id, false, complianceDb);
+        }
+
+        public static FilingNameFeeType GetFilingNameFeeType(int id, bool getLicenseTypes, ComplianceRepositoryEntities complianceDb)
+        {
+            if (complianceDb == null)
+            {
+                complianceDb = new ComplianceRepositoryEntities();
+            }
+            if (getLicenseTypes)
+            {
+                return (from d in complianceDb.FilingNameFeeTypes.Include("LicenseDebtTypes")
+                        where d.Id == id
+                        select d).SingleOrDefault();
+            }
+            else
+            {
+                return (from d in complianceDb.FilingNameFeeTypes
+                        where d.Id == id
+                        select d).SingleOrDefault();
+            }
+        }
+
+
+        public static Dictionary<string, object> SaveFilingNameFeeType(int id, string name)
+        {
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            try
+            {
+                using (ComplianceRepositoryEntities complianceDb = new ComplianceRepositoryEntities())
+                {
+                    FilingNameFeeType saveFilingNameFeeType;
+                    if (id <= 0)
+                    {
+                        saveFilingNameFeeType; = new FilingNameFeeType();
+                        DataAuditHelper.LogDataChange(DataAuditHelper.ActionCode.Insert, "Filing Name Fee Type", "Name", string.Empty, name);
+                    }
+                    else
+                    {
+                        saveFilingNameFeeType = GetFilingNameFeeType(id, complianceDb);
+                        if (saveFilingNameFeeType.Name != name)
+                        {
+                            DataAuditHelper.LogDataChange(DataAuditHelper.ActionCode.Update, "Filing Name Fee Type", "Name", saveFilingNameFeeType.Name, name);
+                        }
+                        
+                    }
+
+                    saveFilingNameFeeType.Name = name;
+                   
+
+                    if (id <= 0)
+                    {
+                        complianceDb.FilingNameFeeTypes.Add(saveFilingNameFeeType);
+                    }
+
+                    complianceDb.SaveChanges();
+                    result.Add("Result", LookUpResponseCode.Success);
+                    result.Add("FilingNameFeeType", saveFilingNameFeeType);
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Add("Result", LookUpResponseCode.UnspecifiedError);
+                result.Add("ErrorMessage", ex.Message);
+            }
+            return result;
+        }
+         public static Dictionary<string, object> DeleteFilingNameFeeType(int id)
+        {
+            Dictionary<string, object> result = new Dictionary<string, object>();
+            try
+            {
+                using (ComplianceRepositoryEntities complianceDb = new ComplianceRepositoryEntities())
+                {
+                    FilingNameFeeType deleteFilingNameFeeType;
+                    deleteDebtType = GetFilingNameFeeType(id, complianceDb);
+                    string filingFeeTypeName = deleteFilingNameFeeType.Name;
+                    complianceDb.FilingNameFeeTypes.Remove(deleteFilingNameFeeType);
+                    complianceDb.SaveChanges();
+                    DataAuditHelper.LogDataChange(DataAuditHelper.ActionCode.Delete, "Debt Type", "Name", filingFeeTypeName, string.Empty);
+                    result.Add("Result", LookUpResponseCode.Success);
+                }
+            }
+            catch (System.Data.Entity.Infrastructure.DbUpdateException ex)
+            {
+                if (ex.GetBaseException().Message.StartsWith("The DELETE statement conflicted with the REFERENCE constraint"))
+                {
+                    result.Add("Result", LookUpResponseCode.ExistingRecordsDeleteError);
+                }
+                else
+                {
+                    result.Add("Result", LookUpResponseCode.UnspecifiedError);
+                    result.Add("ErrorMessage", ex.GetBaseException().Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Add("Result", LookUpResponseCode.UnspecifiedError);
+                result.Add("ErrorMessage", ex.Message);
+            }
+            return result;
+        }
